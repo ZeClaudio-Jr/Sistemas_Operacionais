@@ -10,7 +10,7 @@
 
 //Os semáforos POSIX mutex, empty e full são usados para controlar o acesso ao buffer e garantir a sincronização correta entre as threads. São declaradas as variáveis globais necessárias, como sem_t mutex, sem_t empty, sem_t full para os semáforos, além de buffer para representar o buffer compartilhado, N_BUFFER para o tamanho do buffer e PROD_NUM para o número de produtores.
 //  TO DO: Definição dos semáforos (variaveis precisam ser globais).  
-sem_t mutex, empty, full;
+sem_t mutex, empty, full; // Semáforos para exclusão mútua e controle de itens vazios e cheios
 
 // ponteiro para a fila do buffer
 int * buffer;
@@ -26,11 +26,13 @@ int p = 0;
 
 // posicoes para acessar o buffer
 int in = 0;
+
+// Posição de saída no buffer
 int out = 0;
 
 // prototipos das funcoes
 void *producer(void *);
-void *consumer();
+void *consumer(void *);
 int gera_rand(int);
 void print_buffer();
 
@@ -111,7 +113,7 @@ int main(int argc, char ** argv) //A função main() é o ponto de entrada do pr
     return 0;
 }
 
-void * consumer() //A função consumer() é responsável pela lógica do consumidor. Ela aguarda um tempo aleatório, entra em um loop para consumir os itens produzidos e realiza a impressão do buffer em diferentes momentos.
+void * consumer(void *arg) //A função consumer() é responsável pela lógica do consumidor. Ela aguarda um tempo aleatório, entra em um loop para consumir os itens produzidos e realiza a impressão do buffer em diferentes momentos.
 {
     usleep(gera_rand(1000000));
 
