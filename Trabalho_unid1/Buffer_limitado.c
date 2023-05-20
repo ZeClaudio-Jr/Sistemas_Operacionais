@@ -8,7 +8,7 @@
 
 // O problema do Buffer Limitado envolve a sincronização entre produtores e consumidores que compartilham um buffer de tamanho limitado. Os produtores colocam dados no buffer e os consumidores retiram os dados do buffer. Se o buffer estiver cheio, os produtores devem esperar até que haja espaço livre suficiente no buffer. Se o buffer estiver vazio, os consumidores devem esperar até que haja dados disponíveis no buffer.
 
-// TODO: Definição dos semáforos (variaveis precisam ser globais)
+// TO DO: Definição dos semáforos (variaveis precisam ser globais)
 //
 sem_t mutex, empty, full;
 
@@ -61,7 +61,7 @@ int main(int argc, char ** argv)
     PROD_NUM = atoi(argv[2]);
 
     //
-    // TODO: Criação dos semáforos (aqui é quando define seus valores)
+    // TO DO: Criação dos semáforos (aqui é quando define seus valores)
     //
     sem_init(&mutex, 0, 1);
     sem_init(&full, 0, 0);
@@ -98,7 +98,7 @@ int main(int argc, char ** argv)
     pthread_join(tcons, NULL);
 
     //
-    // TODO: Excluindo os semaforos
+    // TO DO: Excluindo os semaforos
     //
     sem_destroy(&mutex);
     sem_destroy(&full);
@@ -128,7 +128,7 @@ void * consumer()
         print_buffer();
 
         //
-        // TODO: precisa bloquear ate que tenha algo a consumir
+        // TO DO: precisa bloquear ate que tenha algo a consumir
         //
         sem_wait(&full);
         sem_wait(&mutex);
@@ -138,7 +138,7 @@ void * consumer()
         print_buffer();
 
         //
-        // TODO: precisa garantir exclusão mutua ao acessar o buffer
+        // TO DO: precisa garantir exclusão mutua ao acessar o buffer
         //
         sem_wait(&mutex);
         sem_wait(&empty);
@@ -162,12 +162,12 @@ void * consumer()
         out = (out + 1) % N_BUFFER;
 
         //
-        // TODO: saindo da seção critica
+        // TO DO: saindo da seção critica
         //
         sem_post(&mutex);
         
         //
-        // TODO: liberando o recurso
+        // TO DO: liberando o recurso
         //
         sem_post(&empty);
 
@@ -189,7 +189,7 @@ void * producer(void * id) {
     printf("> Produtor %d esperando por recurso!\n",i);
 
     //
-    // TODO: precisa bloquear até que tenha posicao disponível no buffer
+    // TO DO: precisa bloquear até que tenha posicao disponível no buffer
     //
     sem_wait(&empty);
 
@@ -197,7 +197,7 @@ void * producer(void * id) {
     printf("> Produtor %d entrou em ação!\n",i);
 
     // 
-    // TODO: precisa garantir o acesso exclusivo ao buffer
+    // TO DO: precisa garantir o acesso exclusivo ao buffer
     //
     sem_wait(&mutex);
 
@@ -221,12 +221,12 @@ void * producer(void * id) {
     in = (in + 1) % N_BUFFER;
 
     // 
-    // TODO: liberar o acesso ao buffer
+    // TO DO: liberar o acesso ao buffer
     //
     sem_post(&mutex);
     
     //
-    // TODO: liberar para o consumidor acessar o buffer
+    // TO DO: liberar para o consumidor acessar o buffer
     //
     sem_post(&full);
 }
