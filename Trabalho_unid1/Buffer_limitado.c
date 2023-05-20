@@ -6,9 +6,11 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-//
+// O problema do Buffer Limitado envolve a sincronização entre produtores e consumidores que compartilham um buffer de tamanho limitado. Os produtores colocam dados no buffer e os consumidores retiram os dados do buffer. Se o buffer estiver cheio, os produtores devem esperar até que haja espaço livre suficiente no buffer. Se o buffer estiver vazio, os consumidores devem esperar até que haja dados disponíveis no buffer.
+
 // TODO: Definição dos semáforos (variaveis precisam ser globais)
 //
+sem_t mutex, empty, full;
 
 // ponteiro para a fila do buffer
 int * buffer;
@@ -59,9 +61,11 @@ int main(int argc, char ** argv)
     PROD_NUM = atoi(argv[2]);
 
     //
-    // TODO: Criação dos semáforos (aqui é quando define seus
-    // valores)
-    // 
+    // TODO: Criação dos semáforos (aqui é quando define seus valores)
+    //
+    sem_init(&mutex, 0, 1);
+    sem_init(&full, 0, 0);
+    sem_init(&empty, 0, N_BUFFER);
     
     // gerando um buffer de N inteiros
     buffer = malloc(N_BUFFER * sizeof(int));
@@ -95,7 +99,10 @@ int main(int argc, char ** argv)
 
     //
     // TODO: Excluindo os semaforos
-    // 
+    //
+    sem_destroy(&mutex);
+    sem_destroy(&full);
+    sem_destroy(&empty); 
 
     // liberando a memoria alocada
     free(buffer);
@@ -123,7 +130,9 @@ void * consumer()
         //
         // TODO: precisa bloquear ate que tenha algo a consumir
         //
-        
+        sem_wait(&full);
+        sem_wait(&mutex);
+
         printf("- Consumidor entrou em ação!\n");
 
         print_buffer();
@@ -131,12 +140,15 @@ void * consumer()
         //
         // TODO: precisa garantir exclusão mutua ao acessar o buffer
         //
+        sem_wait(&mutex);
+        sem_wait(&empty);
 
         printf("\t- Consumidor vai limpar posição %d\n", out);
 
         // acessando o buffer
         produto = buffer[out];
         printf("\t- Consumiu o valor: %d\n",produto);
+
         // verificando se o consumidor nao esta consumindo sujeira do buffer
         if (buffer[out] == -1)
         {
@@ -152,18 +164,19 @@ void * consumer()
         //
         // TODO: saindo da seção critica
         //
+        sem_post(&mutex);
         
         //
         // TODO: liberando o recurso
         //
+        sem_post(&empty);
 
         i++;
     }
 }
 
 // recebe o Id de um produtor
-void * producer(void * id)
-{
+void * producer(void * id) {
     usleep(gera_rand(1000000));
 
     // recebendo od Id do produtor e convertendo para int
@@ -178,6 +191,7 @@ void * producer(void * id)
     //
     // TODO: precisa bloquear até que tenha posicao disponível no buffer
     //
+    sem_wait(&empty);
 
 
     printf("> Produtor %d entrou em ação!\n",i);
@@ -185,6 +199,7 @@ void * producer(void * id)
     // 
     // TODO: precisa garantir o acesso exclusivo ao buffer
     //
+    sem_wait(&mutex);
 
     // numero aleatorio de 0 a 99
     produto = gera_rand(100);
@@ -208,10 +223,12 @@ void * producer(void * id)
     // 
     // TODO: liberar o acesso ao buffer
     //
+    sem_post(&mutex);
     
     //
     // TODO: liberar para o consumidor acessar o buffer
     //
+    sem_post(&full);
 }
 
 int gera_rand(int limit)
