@@ -8,8 +8,8 @@
 
 // O problema do Buffer Limitado envolve a sincronização entre produtores e consumidores que compartilham um buffer de tamanho limitado. Os produtores colocam dados no buffer e os consumidores retiram os dados do buffer. Se o buffer estiver cheio, os produtores devem esperar até que haja espaço livre suficiente no buffer. Se o buffer estiver vazio, os consumidores devem esperar até que haja dados disponíveis no buffer.
 
-// TO DO: Definição dos semáforos (variaveis precisam ser globais)
-//
+//Os semáforos POSIX mutex, empty e full são usados para controlar o acesso ao buffer e garantir a sincronização correta entre as threads. São declaradas as variáveis globais necessárias, como sem_t mutex, sem_t empty, sem_t full para os semáforos, além de buffer para representar o buffer compartilhado, N_BUFFER para o tamanho do buffer e PROD_NUM para o número de produtores.
+//  TO DO: Definição dos semáforos (variaveis precisam ser globais).  
 sem_t mutex, empty, full;
 
 // ponteiro para a fila do buffer
@@ -34,7 +34,7 @@ void *consumer();
 int gera_rand(int);
 void print_buffer();
 
-int main(int argc, char ** argv)
+int main(int argc, char ** argv) //A função main() é o ponto de entrada do programa. Primeiro, são tratados os argumentos da linha de comando para obter o tamanho do buffer e o número de produtores. Em seguida, são inicializados os semáforos e o buffer. As threads produtoras são criadas usando o número de produtores fornecido. A thread consumidora também é criada.
 {
     // thread do consumidor
     pthread_t tcons;
@@ -68,50 +68,50 @@ int main(int argc, char ** argv)
     sem_init(&empty, 0, N_BUFFER);
     
     // gerando um buffer de N inteiros
-    buffer = malloc(N_BUFFER * sizeof(int));
+    buffer = malloc(N_BUFFER * sizeof(int)); // Alocação do buffer
 
     // "zerando" o buffer com valores -1
     for (i = 0; i < N_BUFFER; i++)
     {
-        buffer[i] = -1;
+        buffer[i] = -1; // Inicialização do buffer com valores inválidos
     }
 
     // gerando uma lista de threads de produtores
-    nprod = malloc(PROD_NUM * sizeof(pthread_t));
+    nprod = malloc(PROD_NUM * sizeof(pthread_t)); // Alocação das threads produtoras
 
     // iniciando a thread do consumidor
-    pthread_create(&tcons, NULL, consumer, NULL);
+    pthread_create(&tcons, NULL, consumer, NULL); // Criação da thread consumidora
 
     // iniciando as threads dos produtores
     for (i = 0; i < PROD_NUM; i++)
     {
-        pthread_create(&nprod[i], NULL, producer, (void *)i);
+        pthread_create(&nprod[i], NULL, producer, (void *)i); // Criação das threads produtoras
     }
     
     // iniciando as threads dos produtores
     for (i = 0; i < PROD_NUM; i++)
     {
-        pthread_join(nprod[i], NULL);
+        pthread_join(nprod[i], NULL); // Espera as threads produtoras terminarem
     }
 
     // finalizando a thread do consumidor
-    pthread_join(tcons, NULL);
+    pthread_join(tcons, NULL); // Espera a thread consumidora terminar
 
     //
-    // TO DO: Excluindo os semaforos
+    // TO DO: Excluindo os semaforos. Destruição dos semáforos
     //
     sem_destroy(&mutex);
     sem_destroy(&full);
     sem_destroy(&empty); 
 
     // liberando a memoria alocada
-    free(buffer);
-    free(nprod);
+    free(buffer); // Liberação da memória alocada para o buffer
+    free(nprod); // Liberação da memória alocada para as threads produtoras
 
     return 0;
 }
 
-void * consumer()
+void * consumer() //A função consumer() é responsável pela lógica do consumidor. Ela aguarda um tempo aleatório, entra em um loop para consumir os itens produzidos e realiza a impressão do buffer em diferentes momentos.
 {
     usleep(gera_rand(1000000));
 
@@ -130,8 +130,8 @@ void * consumer()
         //
         // TO DO: precisa bloquear ate que tenha algo a consumir
         //
-        sem_wait(&full);
-        sem_wait(&mutex);
+        sem_wait(&full); // Aguarda até que haja um item para consumir
+        sem_wait(&mutex); // Obtém acesso exclusivo ao buffer
 
         printf("- Consumidor entrou em ação!\n");
 
@@ -175,9 +175,9 @@ void * consumer()
     }
 }
 
-// recebe o Id de um produtor
+// recebe o Id de um produtor. A função producer() é responsável pela lógica do produtor. Ela aguarda um tempo aleatório, entra em um loop para produzir os itens e realiza a impressão do buffer em diferentes momentos.
 void * producer(void * id) {
-    usleep(gera_rand(1000000));
+    usleep(gera_rand(1000000)); // Aguarda um tempo aleatório antes de começar a produzir
 
     // recebendo od Id do produtor e convertendo para int
     // int i = (int)id;
@@ -191,7 +191,7 @@ void * producer(void * id) {
     //
     // TO DO: precisa bloquear até que tenha posicao disponível no buffer
     //
-    sem_wait(&empty);
+    sem_wait(&empty); // Aguarda até que haja espaço disponível no buffer
 
 
     printf("> Produtor %d entrou em ação!\n",i);
@@ -199,10 +199,10 @@ void * producer(void * id) {
     // 
     // TO DO: precisa garantir o acesso exclusivo ao buffer
     //
-    sem_wait(&mutex);
+    sem_wait(&mutex); // Obtém acesso exclusivo ao buffer
 
     // numero aleatorio de 0 a 99
-    produto = gera_rand(100);
+    produto = gera_rand(100); // Gera um valor aleatório para produzir
 
     // verificando se o produtor nao esta sobrescrevendo uma posicao
     if (buffer[in] != -1)
@@ -231,13 +231,13 @@ void * producer(void * id) {
     sem_post(&full);
 }
 
-int gera_rand(int limit)
+int gera_rand(int limit) //A função gera_rand() simplesmente gera um número aleatório dentro de um limite fornecido.
 {
     // 0 a (limit - 1)
     return rand() % limit;
 }
 
-void print_buffer()
+void print_buffer() //A função print_buffer() é utilizada para imprimir o estado atual do buffer.
 {
     int i;
     printf("\t== BUFFER ==\n");
