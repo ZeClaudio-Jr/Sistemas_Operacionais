@@ -90,7 +90,7 @@ int main(int argc, char ** argv)
     // TO DO: Excluindo os semaforos
     // 
     sem_destroy(&wrt); // Destroi o semáforo wrt
-    sem_destroy(&mutex); // Destroi o semáforo mutex. //Após as threads terem concluído sua execução, é necessário chamar sem_destroy() para liberar os recursos dos semáforos.
+    sem_destroy(&mutex); // Destroi o semáforo mitex. Após as threads terem concluído sua execução, é necessário chamar sem_destroy() para liberar os recursos dos semáforos.
 
     // liberando a memoria alocada
     free(tl);
@@ -103,7 +103,7 @@ void * leitor(void * id)
 {
     usleep(gera_rand(1000000));
 
-    // convertendo o Id do leitor para int
+    // convertendo o id do leitor para int
     long i = (long)id;
 
     // variavel interna à thread para armazenar o valor compartilhado
@@ -192,6 +192,6 @@ void * escritor(void * id)
 
 int gera_rand(int limit)
 {
-    // 0 a (limit -1)
+    // De 0 a (limit -1)
     return rand() %limit;
 }
