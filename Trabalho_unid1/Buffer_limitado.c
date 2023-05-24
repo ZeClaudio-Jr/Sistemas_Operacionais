@@ -12,6 +12,7 @@
 //  TO DO: Definição dos semáforos (variaveis precisam ser globais).  
 sem_t mutex, empty, full; // Semáforos para exclusão mútua e controle de itens vazios e cheios
 
+
 // ponteiro para a fila do buffer
 int * buffer;
 
@@ -30,11 +31,12 @@ int in = 0;
 // Posição de saída no buffer
 int out = 0;
 
-// prototipos das funcoes
+// prototipos das funções
 void *producer(void *);
-void *consumer(void *);
+void *consumer();
 int gera_rand(int);
 void print_buffer();
+
 
 int main(int argc, char ** argv) //A função main() é o ponto de entrada do programa. Primeiro, são tratados os argumentos da linha de comando para obter o tamanho do buffer e o número de produtores. Em seguida, são inicializados os semáforos e o buffer. As threads produtoras são criadas usando o número de produtores fornecido. A thread consumidora também é criada.
 {
@@ -104,11 +106,11 @@ int main(int argc, char ** argv) //A função main() é o ponto de entrada do pr
     //
     sem_destroy(&mutex);
     sem_destroy(&full);
-    sem_destroy(&empty); 
-
+    sem_destroy(&empty);
+    
     // liberando a memoria alocada
-    free(buffer); // Liberação da memória alocada para o buffer
-    free(nprod); // Liberação da memória alocada para as threads produtoras
+    free(buffer); // Liberação da memória alocada para o buffer.
+    free(nprod); // Liberação da memória alocada para as threads produtoras.
 
     return 0;
 }
@@ -130,20 +132,20 @@ void * consumer(void *arg) //A função consumer() é responsável pela lógica 
         print_buffer();
 
         //
-        // TO DO: precisa bloquear ate que tenha algo a consumir
+        // TODO: precisa bloquear ate que tenha algo a consumir
         //
-        sem_wait(&full); // Aguarda até que haja um item para consumir
-        sem_wait(&mutex); // Obtém acesso exclusivo ao buffer
-
+        sem_wait(&full);// O consumidor aguarda até que o buffer esteja cheio.
+       
+        
         printf("- Consumidor entrou em ação!\n");
 
         print_buffer();
 
         //
-        // TO DO: precisa garantir exclusão mutua ao acessar o buffer
+        // TODO: precisa garantir exclusão mutua ao acessar o buffer
         //
-        sem_wait(&mutex);
-        sem_wait(&empty);
+        sem_wait(&mutex);// Obtém acesso exclusivo ao buffer.
+      
 
         printf("\t- Consumidor vai limpar posição %d\n", out);
 
@@ -161,7 +163,7 @@ void * consumer(void *arg) //A função consumer() é responsável pela lógica 
         
         // limpando o buffer nesta posição
         buffer[out] = -1;
-        out = (out + 1) % N_BUFFER;
+        out = (out + 1) % N_BUFFER;// Atualiza o buffer.
 
         //
         // TO DO: saindo da seção critica
@@ -178,8 +180,8 @@ void * consumer(void *arg) //A função consumer() é responsável pela lógica 
 }
 
 // recebe o Id de um produtor. A função producer() é responsável pela lógica do produtor. Ela aguarda um tempo aleatório, entra em um loop para produzir os itens e realiza a impressão do buffer em diferentes momentos.
-void * producer(void * id) {
-    usleep(gera_rand(1000000)); // Aguarda um tempo aleatório antes de começar a produzir
+void * producer(void * id) {// Essa função producer é executada pelas threads produtoras. Ela simula o comportamento dos produtores.
+    usleep(gera_rand(1000000)); // Aguarda um tempo aleatório antes de começar a produzir.
 
     // recebendo od Id do produtor e convertendo para int
     // int i = (int)id;
@@ -191,23 +193,22 @@ void * producer(void * id) {
     printf("> Produtor %d esperando por recurso!\n",i);
 
     //
-    // TO DO: precisa bloquear até que tenha posicao disponível no buffer
+    // TODO: precisa bloquear até que tenha posicao disponível no buffer
     //
-    sem_wait(&empty); // Aguarda até que haja espaço disponível no buffer
-
+    sem_wait(&empty);// Cada produtor aguarda até que haja uma posição vazia no buffer.
 
     printf("> Produtor %d entrou em ação!\n",i);
 
     // 
     // TO DO: precisa garantir o acesso exclusivo ao buffer
     //
-    sem_wait(&mutex); // Obtém acesso exclusivo ao buffer
+    sem_wait(&mutex);// Obtém acesso exclusivo ao buffer.
 
     // numero aleatorio de 0 a 99
     produto = gera_rand(100); // Gera um valor aleatório para produzir
 
-    // verificando se o produtor nao esta sobrescrevendo uma posicao
-    if (buffer[in] != -1)
+    // verificando se o produtor nao esta sobrescrevendo uma posicao.
+    if (buffer[in] != -1) // Verifica se a posição in do buffer já está ocupada.
     {
         printf("==== ALERTA DO PRODUTOR %d ====\n", i);
         printf("Posicao %d ocupada com o valor %d\n",in,buffer[in]);
@@ -216,30 +217,30 @@ void * producer(void * id) {
 
     // gravando no buffer
     printf("\t> Produtor %d vai gravar o valor %d na pos %d\n", i, produto, in);
-    buffer[in] = produto;
+    buffer[in] = produto;// Grava o valor produzido na posição in do buffer.
     
     // avancando a posicao do buffer
     //p++; 
-    in = (in + 1) % N_BUFFER;
+    in = (in + 1) % N_BUFFER;// Atualiza o contador in.
 
     // 
     // TO DO: liberar o acesso ao buffer
     //
-    sem_post(&mutex);
+    sem_post(&mutex);// Libera o acesso ao buffer.
     
     //
     // TO DO: liberar para o consumidor acessar o buffer
     //
-    sem_post(&full);
+    sem_post(&full);// Sinaliza que uma posição do buffer está cheia.
 }
 
-int gera_rand(int limit) //A função gera_rand() simplesmente gera um número aleatório dentro de um limite fornecido.
+int gera_rand(int limit) //A função gera_rand() simplesmente gera um número aleatório dentro de um limite fornecido, de 0 a limit-1.
 {
     // 0 a (limit - 1)
     return rand() % limit;
 }
 
-void print_buffer() //A função print_buffer() é utilizada para imprimir o estado atual do buffer.
+void print_buffer() //A função print_buffer() é utilizada para imprimir o estado atual do buffer. Imprime o conteúdo do buffer na saída padrão.
 {
     int i;
     printf("\t== BUFFER ==\n");
