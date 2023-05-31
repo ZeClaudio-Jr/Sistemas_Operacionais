@@ -132,7 +132,7 @@ void * consumer(void *arg) //A função consumer() é responsável pela lógica 
         print_buffer();
 
         //
-        // TODO: precisa bloquear ate que tenha algo a consumir
+        // TO DO: precisa bloquear ate que tenha algo a consumir
         //
         sem_wait(&full);// O consumidor aguarda até que o buffer esteja cheio.
        
@@ -142,7 +142,7 @@ void * consumer(void *arg) //A função consumer() é responsável pela lógica 
         print_buffer();
 
         //
-        // TODO: precisa garantir exclusão mutua ao acessar o buffer
+        // TO DO: precisa garantir exclusão mutua ao acessar o buffer
         //
         sem_wait(&mutex);// Obtém acesso exclusivo ao buffer.
       
@@ -193,7 +193,7 @@ void * producer(void * id) {// Essa função producer é executada pelas threads
     printf("> Produtor %d esperando por recurso!\n",i);
 
     //
-    // TODO: precisa bloquear até que tenha posicao disponível no buffer
+    // TO DO: precisa bloquear até que tenha posicao disponível no buffer
     //
     sem_wait(&empty);// Cada produtor aguarda até que haja uma posição vazia no buffer.
 
